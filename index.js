@@ -104,4 +104,4 @@ app.post('/generate-from-audio', upload.single('audio'), async (req, res) => {
     } finally {
         fs.unlinkSync(req.file.path);
     }
-});
+}); 
