@@ -44,7 +44,7 @@ function imageToGenerativePart(imagePath) {
 
 // endpoint: /generate-text-image
 app.post('/generate-from-image', upload.single('image'), async (req, res) => {
-    const prompt = req.body.prompt || 'Describe the image';
+    const prompt = req.body.prompt || 'Deskripsikan gambar berikut:';
     const image = imageToGenerativePart(req.file.path);
 
     try {
@@ -60,6 +60,8 @@ app.post('/generate-from-image', upload.single('image'), async (req, res) => {
 
 // endpoint: /generate-from-document
 app.post('/generate-from-document', upload.single('document'), async (req, res) => {
+    // Ambil prompt dari request body, atau gunakan prompt default jika tidak ada
+    const prompt = req.body.prompt || 'Analisis dokumen berikut:';
     const filePath = req.file.path;
     const buffer = fs.readFileSync(filePath);
     const base64Data = buffer.toString('base64');
@@ -70,7 +72,7 @@ app.post('/generate-from-document', upload.single('document'), async (req, res) 
             inlineData: { data: base64Data, mimeType }
         };
 
-        const result = await model.generateContent(['Analyze this document:', documentPart]);
+        const result = await model.generateContent([prompt, documentPart]);
         const response = await result.response;
         res.json({ output: response.text() });
     } catch (error) {
@@ -82,7 +84,10 @@ app.post('/generate-from-document', upload.single('document'), async (req, res) 
 
 
 // endpoint: /generate-from-audio
+// endpoint: /generate-from-audio
 app.post('/generate-from-audio', upload.single('audio'), async (req, res) => {
+    // Ambil prompt dari request body, atau gunakan prompt default
+    const prompt = req.body.prompt || 'Transkrip audio berikut:';
     const audioBuffer = fs.readFileSync(req.file.path);
     const base64Audio = audioBuffer.toString('base64');
     const audioPart = {
@@ -93,10 +98,7 @@ app.post('/generate-from-audio', upload.single('audio'), async (req, res) => {
     };
 
     try {
-        const result = await model.generateContent([
-            'Transcribe the following audio:', audioPart]
-        );
-
+        const result = await model.generateContent([prompt, audioPart]);
         const response = await result.response;
         res.json({ output: response.text() });
     } catch (error) {
@@ -104,4 +106,4 @@ app.post('/generate-from-audio', upload.single('audio'), async (req, res) => {
     } finally {
         fs.unlinkSync(req.file.path);
     }
-}); 
+});
